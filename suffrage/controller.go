@@ -52,7 +52,7 @@ func (c *Controller) RegisterBet(w http.ResponseWriter, r *http.Request) {
 	if err := r.Body.Close(); err != nil {
 		log.Fatalln("Error RegisterBet", err)
 	}
-	var bet Bet
+	var bet Vote
 	if err := json.Unmarshal(body, &bet); err != nil { // unmarshall body contents as a type Candidate
 		w.WriteHeader(422) // unprocessable entity
 		if err := json.NewEncoder(w).Encode(err); err != nil {
@@ -88,7 +88,7 @@ func (c *Controller) RegisterAndBroadcastBet(w http.ResponseWriter, r *http.Requ
 	if err := r.Body.Close(); err != nil {
 		log.Fatalln("Error RegisterBet", err)
 	}
-	var bet Bet
+	var bet Vote
 	if err := json.Unmarshal(body, &bet); err != nil { // unmarshall body contents as a type Candidate
 		w.WriteHeader(422) // unprocessable entity
 		if err := json.NewEncoder(w).Encode(err); err != nil {
@@ -124,7 +124,7 @@ func (c *Controller) RegisterAndBroadcastBet(w http.ResponseWriter, r *http.Requ
 func (c *Controller) Mine(w http.ResponseWriter, r *http.Request) {
 	lastBlock := c.blockchain.GetLastBlock()
 	previousBlockHash := lastBlock.Hash
-	currentBlockData := BlockData{Index: strconv.Itoa(lastBlock.Index - 1), Bets: c.blockchain.PendingBets}
+	currentBlockData := BlockData{Index: strconv.Itoa(lastBlock.Index - 1), Votes: c.blockchain.PendingVotes}
 	currentBlockDataAsByteArray, _ := json.Marshal(currentBlockData)
 	currentBlockDataAsStr := base64.URLEncoding.EncodeToString(currentBlockDataAsByteArray)
 
@@ -353,7 +353,7 @@ func (c *Controller) ReceiveNewBlock(w http.ResponseWriter, r *http.Request) {
 	// append block to blockchain
 	if c.blockchain.CheckNewBlockHash(blockReceived) {
 		resp.Note = "New Block received and accepted."
-		c.blockchain.PendingBets = Bets{}
+		c.blockchain.PendingVotes = Votes{}
 		c.blockchain.Chain = append(c.blockchain.Chain, blockReceived)
 	} else {
 		resp.Note = "New Block rejected."
@@ -406,7 +406,7 @@ func (c *Controller) Consensus(w http.ResponseWriter, r *http.Request) {
 
 	if maxChainLength > len(c.blockchain.Chain) && longestChain.ChainIsValid() {
 		c.blockchain.Chain = longestChain.Chain
-		c.blockchain.PendingBets = longestChain.PendingBets
+		c.blockchain.PendingVotes = longestChain.PendingVotes
 
 		resp.Note = "This chain has been replaced."
 	} else {

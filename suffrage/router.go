@@ -10,7 +10,7 @@ import (
 var controller = &Controller{
 	blockchain: &Blockchain{
 		Chain:        Blocks{},
-		PendingBets:  Bets{},
+		PendingVotes: Votes{},
 		NetworkNodes: []string{}}}
 
 // Route defines a route
@@ -56,15 +56,15 @@ var routes = Routes{
 		controller.RegisterNodesBulk,
 	},
 	Route{
-		"RegisterBet",
+		"RegisterVote",
 		"POST",
-		"/bet",
+		"/vote",
 		controller.RegisterBet,
 	},
 	Route{
-		"RegisterAndBroadcastBet",
+		"RegisterAndBroadcastVote",
 		"POST",
-		"/bet/broadcast",
+		"/vote/broadcast",
 		controller.RegisterAndBroadcastBet,
 	},
 	Route{
@@ -86,13 +86,13 @@ var routes = Routes{
 		controller.Consensus,
 	},
 	Route{
-		"GetBetsForMatch",
+		"GetVotesForMatch",
 		"GET",
 		"/match/{matchId}",
 		controller.GetBetsForMatch,
 	},
 	Route{
-		"GetBetsForPlayer",
+		"GetVotesForPlayer",
 		"GET",
 		"/player/{playerName}",
 		controller.GetBetsForPlayer,

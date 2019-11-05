@@ -1,21 +1,20 @@
 package suffrage
 
-//Bet represents a bet
-type Bet struct {
-	PlayerName   string `json:"playername"`
-	MatchID      string `json:"matchid"`
-	TeamOneScore int    `json:"teamonescore"`
-	TeamTwoScore int    `json:"teamtwoscore"`
+//Vote represents
+type Vote struct {
+	UserID      string `json:"userid"`
+	ElectionID  string `json:"electionid"`
+	CandidateID int    `json:"candidateid"`
 }
 
-//Bets is an array of Bet
-type Bets []Bet
+//Votes is an array of [Vote]
+type Votes []Vote
 
 //Block ...
 type Block struct {
 	Index             int    `json:"index"`
 	Timestamp         int64  `json:"timestamp"`
-	Bets              Bets   `json:"bets"`
+	Votes             Votes  `json:"votes"`
 	Nonce             int    `json:"nonce"`
 	Hash              string `json:"hash"`
 	PreviousBlockHash string `json:"previousblockhash"`
@@ -27,12 +26,12 @@ type Blocks []Block
 //Blockchain ...
 type Blockchain struct {
 	Chain        Blocks   `json:"chain"`
-	PendingBets  Bets     `json:"pending_bets"`
+	PendingVotes Votes    `json:"pending_votes"`
 	NetworkNodes []string `json:"network_nodes"`
 }
 
 //BlockData is used in hash calculations
 type BlockData struct {
 	Index string
-	Bets  Bets
+	Votes Votes
 }

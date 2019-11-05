@@ -10,10 +10,10 @@ import (
 )
 
 //RegisterBet registers a bet in our blockchain
-func (b *Blockchain) RegisterBet(bet Bet) bool {
-	bet.PlayerName = strings.ToLower(bet.PlayerName)
-	bet.MatchID = strings.ToLower(bet.MatchID)
-	b.PendingBets = append(b.PendingBets, bet)
+func (b *Blockchain) RegisterBet(vote Vote) bool {
+	vote.UserID = strings.ToLower(vote.UserID)
+	vote.ElectionID = strings.ToLower(vote.ElectionID)
+	b.PendingVotes = append(b.PendingVotes, vote)
 	return true
 }
 
@@ -38,12 +38,12 @@ func (b *Blockchain) RegisterNode(node string) bool {
 func (b *Blockchain) CreateNewBlock(nonce int, previousBlockHash string, hash string) Block {
 	newBlock := Block{
 		Index:     len(b.Chain) + 1,
-		Bets:      b.PendingBets,
+		Votes:     b.PendingVotes,
 		Timestamp: time.Now().UnixNano(),
 		Nonce:     nonce,
 		Hash:      hash, PreviousBlockHash: previousBlockHash}
 
-	b.PendingBets = Bets{}
+	b.PendingVotes = Votes{}
 	b.Chain = append(b.Chain, newBlock)
 	return newBlock
 }
@@ -89,7 +89,7 @@ func (b *Blockchain) ChainIsValid() bool {
 	for i < len(b.Chain) {
 		currentBlock := b.Chain[i]
 		prevBlock := b.Chain[i-1]
-		currentBlockData := BlockData{Index: strconv.Itoa(prevBlock.Index - 1), Bets: currentBlock.Bets}
+		currentBlockData := BlockData{Index: strconv.Itoa(prevBlock.Index - 1), Votes: currentBlock.Votes}
 		currentBlockDataAsByteArray, _ := json.Marshal(currentBlockData)
 		currentBlockDataAsStr := base64.URLEncoding.EncodeToString(currentBlockDataAsByteArray)
 		blockHash := b.HashBlock(prevBlock.Hash, currentBlockDataAsStr, currentBlock.Nonce)
@@ -109,24 +109,24 @@ func (b *Blockchain) ChainIsValid() bool {
 	correctNonce := genesisBlock.Nonce == 100
 	correctPreviousBlockHash := genesisBlock.PreviousBlockHash == "0"
 	correctHash := genesisBlock.Hash == "0"
-	correctBets := len(genesisBlock.Bets) == 0
+	correctBets := len(genesisBlock.Votes) == 0
 
 	return (correctNonce && correctPreviousBlockHash && correctHash && correctBets)
 }
 
 //GetBetsForMatch ...
-func (b *Blockchain) GetBetsForMatch(matchID string) Bets {
-	matchBets := Bets{}
+func (b *Blockchain) GetBetsForMatch(matchID string) Votes {
+	matchBets := Votes{}
 	i := 0
 	chainLength := len(b.Chain)
 	for i < chainLength {
 		block := b.Chain[i]
-		betsInBlock := block.Bets
+		betsInBlock := block.Votes
 		j := 0
 		betsLength := len(betsInBlock)
 		for j < betsLength {
 			bet := betsInBlock[j]
-			if bet.MatchID == matchID {
+			if bet.ElectionID == matchID {
 				matchBets = append(matchBets, bet)
 			}
 			j = j + 1
@@ -137,18 +137,18 @@ func (b *Blockchain) GetBetsForMatch(matchID string) Bets {
 }
 
 //GetBetsForPlayer ...
-func (b *Blockchain) GetBetsForPlayer(playerName string) Bets {
-	matchBets := Bets{}
+func (b *Blockchain) GetBetsForPlayer(playerName string) Votes {
+	matchBets := Votes{}
 	i := 0
 	chainLength := len(b.Chain)
 	for i < chainLength {
 		block := b.Chain[i]
-		betsInBlock := block.Bets
+		betsInBlock := block.Votes
 		j := 0
 		betsLength := len(betsInBlock)
 		for j < betsLength {
 			bet := betsInBlock[j]
-			if bet.PlayerName == playerName {
+			if bet.UserID == playerName {
 				matchBets = append(matchBets, bet)
 			}
 			j = j + 1
