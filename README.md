@@ -11,7 +11,7 @@
 
 - Prerequisitos:
   - [Postman](https://www.getpostman.com/) o similares
-  - Gorilla Mux : `go get github.com/gorilla/handlers`
+  - Gorilla Mux : `go get github.com/gorilla/mux`
   - Gorilla Handlers: `go get github.com/gorilla/handlers`
 
 - Test!!
