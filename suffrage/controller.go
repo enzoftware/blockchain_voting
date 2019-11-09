@@ -41,8 +41,8 @@ func (c *Controller) GetBlockchain(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//RegisterBet POST /bet
-func (c *Controller) RegisterBet(w http.ResponseWriter, r *http.Request) {
+//RegisterVote POST /vote
+func (c *Controller) RegisterVote(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body) // read the body of the request
 	if err != nil {
 		log.Fatalln("Error RegisterBet", err)
@@ -52,17 +52,17 @@ func (c *Controller) RegisterBet(w http.ResponseWriter, r *http.Request) {
 	if err := r.Body.Close(); err != nil {
 		log.Fatalln("Error RegisterBet", err)
 	}
-	var bet Bet
-	if err := json.Unmarshal(body, &bet); err != nil { // unmarshall body contents as a type Candidate
+	var vote Vote
+	if err := json.Unmarshal(body, &vote); err != nil { // unmarshall body contents as a type Candidate
 		w.WriteHeader(422) // unprocessable entity
 		if err := json.NewEncoder(w).Encode(err); err != nil {
-			log.Fatalln("Error RegisterBet unmarshalling data", err)
+			log.Fatalln("Error RegisterVote unmarshalling data", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	success := c.blockchain.RegisterBet(bet) // registers the bet into the blockchain
+	success := c.blockchain.RegisterVote(vote) // registers the vote into the blockchain
 	if !success {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -71,34 +71,34 @@ func (c *Controller) RegisterBet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	var resp ResponseToSend
-	resp.Note = "Bet created and broadcast successfully."
+	resp.Note = "Vote created and broadcast successfully."
 	data, _ := json.Marshal(resp)
 	w.Write(data)
 	return
 }
 
-//RegisterAndBroadcastBet POST /bet/broadcast
-func (c *Controller) RegisterAndBroadcastBet(w http.ResponseWriter, r *http.Request) {
+//RegisterAndBroadcastVote POST /vote/broadcast
+func (c *Controller) RegisterAndBroadcastVote(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body) // read the body of the request
 	if err != nil {
-		log.Fatalln("Error RegisterBet", err)
+		log.Fatalln("Error RegisterVote", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if err := r.Body.Close(); err != nil {
-		log.Fatalln("Error RegisterBet", err)
+		log.Fatalln("Error RegisterVote", err)
 	}
-	var bet Bet
-	if err := json.Unmarshal(body, &bet); err != nil { // unmarshall body contents as a type Candidate
+	var vote Vote
+	if err := json.Unmarshal(body, &vote); err != nil { // unmarshall body contents as a type Candidate
 		w.WriteHeader(422) // unprocessable entity
 		if err := json.NewEncoder(w).Encode(err); err != nil {
-			log.Fatalln("Error RegisterBet unmarshalling data", err)
+			log.Fatalln("Error RegisterVote unmarshalling data", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	success := c.blockchain.RegisterBet(bet) // registers the bet into the blockchain
+	success := c.blockchain.RegisterVote(vote) // registers the vote into the blockchain
 	if !success {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -115,7 +115,7 @@ func (c *Controller) RegisterAndBroadcastBet(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	var resp ResponseToSend
-	resp.Note = "Bet created and broadcast successfully."
+	resp.Note = "Vote created and broadcast successfully."
 	data, _ := json.Marshal(resp)
 	w.Write(data)
 }
@@ -124,7 +124,7 @@ func (c *Controller) RegisterAndBroadcastBet(w http.ResponseWriter, r *http.Requ
 func (c *Controller) Mine(w http.ResponseWriter, r *http.Request) {
 	lastBlock := c.blockchain.GetLastBlock()
 	previousBlockHash := lastBlock.Hash
-	currentBlockData := BlockData{Index: strconv.Itoa(lastBlock.Index - 1), Bets: c.blockchain.PendingBets}
+	currentBlockData := BlockData{Index: strconv.Itoa(lastBlock.Index - 1), Votes: c.blockchain.PendingVotes}
 	currentBlockDataAsByteArray, _ := json.Marshal(currentBlockData)
 	currentBlockDataAsStr := base64.URLEncoding.EncodeToString(currentBlockDataAsByteArray)
 
@@ -353,7 +353,7 @@ func (c *Controller) ReceiveNewBlock(w http.ResponseWriter, r *http.Request) {
 	// append block to blockchain
 	if c.blockchain.CheckNewBlockHash(blockReceived) {
 		resp.Note = "New Block received and accepted."
-		c.blockchain.PendingBets = Bets{}
+		c.blockchain.PendingVotes = Votes{}
 		c.blockchain.Chain = append(c.blockchain.Chain, blockReceived)
 	} else {
 		resp.Note = "New Block rejected."
@@ -406,7 +406,7 @@ func (c *Controller) Consensus(w http.ResponseWriter, r *http.Request) {
 
 	if maxChainLength > len(c.blockchain.Chain) && longestChain.ChainIsValid() {
 		c.blockchain.Chain = longestChain.Chain
-		c.blockchain.PendingBets = longestChain.PendingBets
+		c.blockchain.PendingVotes = longestChain.PendingVotes
 
 		resp.Note = "This chain has been replaced."
 	} else {
@@ -419,26 +419,26 @@ func (c *Controller) Consensus(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//GetBetsForMatch GET /match/{matchId} retrieves all bets for a match
-func (c *Controller) GetBetsForMatch(w http.ResponseWriter, r *http.Request) {
+//GetVotesForCandidate GET /candidate/{candidateId} retrieves all votes for a candidate
+func (c *Controller) GetVotesForCandidate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	matchID := strings.ToLower(vars["matchId"])
+	candidateID := strings.ToLower(vars["candidateId"])
 
-	bets := c.blockchain.GetBetsForMatch(matchID)
+	votes := c.blockchain.GetVotesForCandidate(candidateID)
 	w.WriteHeader(http.StatusOK)
-	data, _ := json.Marshal(bets)
+	data, _ := json.Marshal(votes)
 	w.Write(data)
 	return
 }
 
-//GetBetsForPlayer GET /player/{playerName}
-func (c *Controller) GetBetsForPlayer(w http.ResponseWriter, r *http.Request) {
+//GetVotesForVoter GET /voter/{voterName}
+func (c *Controller) GetVotesForVoter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	playerName := strings.ToLower(vars["playerName"])
+	voterName := strings.ToLower(vars["voterName"])
 
-	bets := c.blockchain.GetBetsForPlayer(playerName)
+	votes := c.blockchain.GetVotesForVoter(voterName)
 	w.WriteHeader(http.StatusOK)
-	data, _ := json.Marshal(bets)
+	data, _ := json.Marshal(votes)
 	w.Write(data)
 	return
 }
