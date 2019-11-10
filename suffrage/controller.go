@@ -45,12 +45,12 @@ func (c *Controller) GetBlockchain(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) RegisterVote(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body) // read the body of the request
 	if err != nil {
-		log.Fatalln("Error RegisterBet", err)
+		log.Fatalln("Error RegisterVote", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if err := r.Body.Close(); err != nil {
-		log.Fatalln("Error RegisterBet", err)
+		log.Fatalln("Error RegisterVote", err)
 	}
 	var vote Vote
 	if err := json.Unmarshal(body, &vote); err != nil { // unmarshall body contents as a type Candidate
