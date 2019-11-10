@@ -108,7 +108,7 @@ func (c *Controller) RegisterAndBroadcastVote(w http.ResponseWriter, r *http.Req
 	for _, node := range c.blockchain.NetworkNodes {
 		if node != c.currentNodeURL {
 			// call /register-node in node
-			MakePostCall(node+"/bet", body)
+			MakePostCall(node+"/vote", body)
 		}
 	}
 
