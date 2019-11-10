@@ -115,7 +115,7 @@ func (b *Blockchain) ChainIsValid() bool {
 	return (correctNonce && correctPreviousBlockHash && correctHash && correctVotes)
 }
 
-//GetBetsForCandidate ...
+//GetVotesForCandidate ...
 func (b *Blockchain) GetVotesForCandidate(candidateID string) Votes {
 	candidateVotes := Votes{}
 	i := 0
