@@ -9,9 +9,9 @@ import (
 
 var controller = &Controller{
 	blockchain: &Blockchain{
-		Chain:        Blocks{},
-		PendingBets:  Bets{},
-		NetworkNodes: []string{}}}
+		Chain:        	Blocks{},
+		PendingVotes:  	Votes{},
+		NetworkNodes: 	[]string{}}}
 
 // Route defines a route
 type Route struct {
@@ -56,16 +56,16 @@ var routes = Routes{
 		controller.RegisterNodesBulk,
 	},
 	Route{
-		"RegisterBet",
+		"RegisterVote",
 		"POST",
-		"/bet",
-		controller.RegisterBet,
+		"/vote",
+		controller.RegisterVote,
 	},
 	Route{
-		"RegisterAndBroadcastBet",
+		"RegisterAndBroadcastVote",
 		"POST",
-		"/bet/broadcast",
-		controller.RegisterAndBroadcastBet,
+		"/vote/broadcast",
+		controller.RegisterAndBroadcastVote,
 	},
 	Route{
 		"Mine",
@@ -86,16 +86,16 @@ var routes = Routes{
 		controller.Consensus,
 	},
 	Route{
-		"GetBetsForMatch",
+		"GetVotesForCandidate",
 		"GET",
-		"/match/{matchId}",
-		controller.GetBetsForMatch,
+		"/candidate/{candidateId}",
+		controller.GetVotesForCandidate,
 	},
 	Route{
-		"GetBetsForPlayer",
+		"GetVotesForVoter",
 		"GET",
-		"/player/{playerName}",
-		controller.GetBetsForPlayer,
+		"/voter/{voterName}",
+		controller.GetVotesForVoter,
 	},
 }
 
